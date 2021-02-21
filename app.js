@@ -16,18 +16,24 @@ const KEY = '15674931-a9d714b6e9d654524df198e00&q';
 
 // show images 
 const showImages = (images) => {
-  imagesArea.style.display = 'block';
-  gallery.innerHTML = '';
-  // show gallery title
-  galleryHeader.style.display = 'flex';
-  images.forEach(image => {
-    let div = document.createElement('div');
-    div.className = 'col-lg-3 col-md-4 col-xs-6 img-item mb-2';
-    div.innerHTML = ` <img class="img-fluid img-thumbnail" onclick=selectItem(event,"${image.largeImageURL}") src="${image.largeImageURL}" alt="${image.largeImageURL}">
-      <h5 class="img-heading">${image.tags}</h5>
-    `;
-    gallery.appendChild(div)
-  })
+  if(images.length === 0){
+    alert("Not found!")
+    imagesArea.style.display = "none"
+  }else{
+    imagesArea.style.display = 'block';
+    gallery.innerHTML = '';
+    // show gallery title
+    galleryHeader.style.display = 'flex';
+    
+    images.forEach(image => {
+      let div = document.createElement('div');
+      div.className = 'col-lg-3 col-md-4 col-xs-6 img-item mb-2';
+      div.innerHTML = ` <img class="img-fluid img-thumbnail" onclick=selectItem(event,"${image.largeImageURL}") src="${image.largeImageURL}" alt="${image.largeImageURL}">
+        <h5 class="img-heading">${image.tags}</h5>
+      `;
+      gallery.appendChild(div)
+    })
+  }
   snipperHandle();
 }
 
@@ -37,7 +43,7 @@ const getImages = (query) => {
     .then(data => showImages(data.hits))
     .catch(err => console.log(err))
 }
-
+// select img for slider
 let slideIndex = 0;
 const selectItem = (event, img) => {
   let element = event.target;
@@ -46,16 +52,15 @@ const selectItem = (event, img) => {
   let item = sliders.indexOf(img);
   if (item === -1) {
     sliders.push(img);
-  } else {
-    sliders.pop(img);
+  } else{
+    sliders.splice(item, 1);
   }
 }
 let timer
 const createSlider = () => {
   // check slider image length
   if (sliders.length < 2) {
-    alert('Select at least 2 image.')
-    return;
+    return alert('Select at least 2 image.')
   }
   // crate slider previous next area
   sliderContainer.innerHTML = '';
@@ -65,12 +70,9 @@ const createSlider = () => {
   <span class="prev" onclick="changeItem(-1)"><i class="fas fa-chevron-left"></i></span>
   <span class="next" onclick="changeItem(1)"><i class="fas fa-chevron-right"></i></span>
   `;
-
   sliderContainer.appendChild(prevNext)
-  document.querySelector('.main').style.display = 'block';
   // hide image aria
-  imagesArea.style.display = 'none';
-  const duration = document.getElementById('duration').value || 1000;
+  const duration = document.getElementById('duration').value*1000;
   sliders.forEach(slide => {
     let item = document.createElement('div')
     item.className = "slider-item";
@@ -79,11 +81,17 @@ const createSlider = () => {
     alt="">`;
     sliderContainer.appendChild(item)
   })
-  if (duration < 0) {
-    alert('Time can not be negative!')
-    // return;
+  if (duration === '') {
+    imagesArea.style.display = 'block';
+    alert('Pleas enter slider duration');
   }
-  else if (duration > 0) {
+  else if (duration < 0) {
+    imagesArea.style.display = 'block';
+    alert('Time can not be negative!');
+  }
+  else{
+    imagesArea.style.display = 'none';
+    document.querySelector('.main').style.display = 'block';
     changeSlide(0)
     timer = setInterval(function () {
       slideIndex++;
@@ -96,7 +104,6 @@ const createSlider = () => {
 const changeItem = index => {
   changeSlide(slideIndex += index);
 }
-
 // change slide item
 const changeSlide = (index) => {
 
@@ -117,17 +124,22 @@ const changeSlide = (index) => {
 
   items[index].style.display = "block"
 }
-
+// keyboard and mouse event of create slider
 sliderBtn.addEventListener('click', function () {
   createSlider()
 })
+duration.addEventListener("keydown", function (event) {
+  if (event.keyCode === 13) {
+    createSlider()
+  }
+});
 
-// keyboard and mouse event
+// keyboard and mouse event of search images
 searchBtn.addEventListener('click', function () {
-  if (search.value == '') {
+  if (search.value === '') {
     alert("Please fill out this field.")
   }
-  if (search.value != '') {
+  if (search.value !== '') {
     imagesHandle();
     snipperHandle();
   }
@@ -150,6 +162,6 @@ const imagesHandle = () => {
 }
 // Snipper
 const snipperHandle = () => {
-  const sni = document.querySelector(".spinner");
-  sni.classList.toggle('d-none')
+  const spinner = document.querySelector(".spinner");
+  spinner.classList.toggle('d-none')
 }
